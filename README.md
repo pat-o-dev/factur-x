@@ -86,6 +86,14 @@ $xml = $generator->generateXml($invoice);
 
 // Hybrid PDF, given a visual PDF you already generated (e.g. via mPDF):
 $hybridPdf = $generator->generateHybridPdf($invoice, $basePdfBytes);
+
+// Reverse: pull the embedded XML back out of an existing hybrid PDF...
+$extractedXml = (new \PatODev\FacturX\Pdf\EmbeddedXmlExtractor())->extract($hybridPdf);
+
+// ...and check it against a curated set of business rules:
+$report = (new \PatODev\FacturX\Validation\InvoiceValidator())->validate($extractedXml);
+$report->passed(); // bool
+$report->failures(); // RuleResult[]
 ```
 
 ## Testing
@@ -95,9 +103,28 @@ composer install
 vendor/bin/phpunit
 ```
 
+## Validating an existing invoice
+
+`InvoiceValidator` checks a curated, hand-picked set of business rules —
+not the full official EN 16931 schematron ruleset (see Roadmap):
+
+- Structural: well-formed XML, correct root element/namespace, at least one
+  line, a seller and a buyer party.
+- `BR-CO-15`: tax basis total + tax total = grand total, plus a sub-rule
+  (`BR-CO-15-currencyID`) that the tax total amount carries a `currencyID`
+  attribute (required by most EN 16931 validators, e.g. KoSIT).
+- `BR-CO-25`: if the amount due is positive, a due date or payment terms
+  text must be present.
+- `BR-CO-5-6`: every allowance/charge has a reason code or reason text.
+
+Feed it XML extracted from a hybrid PDF via `EmbeddedXmlExtractor` (classic,
+unencrypted PDFs only, same limitation class as `PdfA3Attacher`; both our
+own uncompressed streams and third-party `/FlateDecode`-compressed ones are
+supported) or raw `factur-x.xml` content directly.
+
 ## Roadmap
 
 - `EXTENDED-CTC-FR` profile (multi-seller/bi-directional invoices, sub-lines).
-- Full `BR-FR-*` business rule validation (with a dedicated `Validator`).
+- Full `BR-FR-*` business rule validation (growing `InvoiceValidator`'s rule set).
 - Schematron-based conformance testing against the official EN 16931 rules.
-- Cross-reference-stream PDF support in the attacher.
+- Cross-reference-stream PDF support in the attacher and extractor.

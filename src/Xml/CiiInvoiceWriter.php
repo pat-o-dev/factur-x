@@ -316,7 +316,7 @@ final class CiiInvoiceWriter
         }
 
         $totals = $this->calculator->totals($invoice, $prepaidAmount, $roundingAmount);
-        $settlement->appendChild($this->buildMonetarySummation($totals));
+        $settlement->appendChild($this->buildMonetarySummation($totals, $invoice->currencyCode));
 
         if ($invoice->precedingInvoiceNumber !== null) {
             $preceding = $this->el($this->doc, self::RAM, 'ram:InvoiceReferencedDocument');
@@ -352,14 +352,18 @@ final class CiiInvoiceWriter
         return $tax;
     }
 
-    private function buildMonetarySummation(InvoiceTotals $totals): DOMElement
+    private function buildMonetarySummation(InvoiceTotals $totals, string $currencyCode): DOMElement
     {
         $summation = $this->el($this->doc, self::RAM, 'ram:SpecifiedTradeSettlementHeaderMonetarySummation');
         $summation->appendChild($this->amountEl('ram:LineTotalAmount', $totals->lineTotalAmount));
         $summation->appendChild($this->amountEl('ram:ChargeTotalAmount', $totals->chargeTotalAmount));
         $summation->appendChild($this->amountEl('ram:AllowanceTotalAmount', $totals->allowanceTotalAmount));
         $summation->appendChild($this->amountEl('ram:TaxBasisTotalAmount', $totals->taxExclusiveAmount));
-        $summation->appendChild($this->amountEl('ram:TaxTotalAmount', $totals->taxAmount));
+        // BT-110: the only header monetary amount EN 16931 requires a currencyID on
+        // (BR-CO-15 validators, e.g. KoSIT, fail to match it to the invoice currency without it).
+        $taxTotal = $this->amountEl('ram:TaxTotalAmount', $totals->taxAmount);
+        $taxTotal->setAttribute('currencyID', $currencyCode);
+        $summation->appendChild($taxTotal);
         $summation->appendChild($this->amountEl('ram:RoundingAmount', $totals->roundingAmount));
         $summation->appendChild($this->amountEl('ram:GrandTotalAmount', $totals->taxInclusiveAmount));
         $summation->appendChild($this->amountEl('ram:TotalPrepaidAmount', $totals->prepaidAmount));

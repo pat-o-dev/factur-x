@@ -66,6 +66,20 @@ final class CiiInvoiceWriterTest extends TestCase
         );
     }
 
+    public function test_tax_total_amount_carries_the_invoice_currency_id(): void
+    {
+        // BR-CO-15 (KoSIT and other EN 16931 validators): ram:TaxTotalAmount is
+        // the only header monetary amount that requires a currencyID attribute.
+        $invoice = InvoiceFactory::simple();
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+
+        $xpath = $this->xpath($xml);
+        $node = $xpath->query('//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount')?->item(0);
+
+        self::assertNotNull($node);
+        self::assertSame($invoice->currencyCode, $node->attributes?->getNamedItem('currencyID')?->textContent);
+    }
+
     private function text(DOMXPath $xpath, string $query): ?string
     {
         $node = $xpath->query($query)?->item(0);

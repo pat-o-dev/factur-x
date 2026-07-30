@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PatODev\FacturX\Model;
 
 use DateTimeImmutable;
+use PatODev\FacturX\Builder\InvoiceBuilder;
 use PatODev\FacturX\Enum\FacturXProfile;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
 
@@ -46,6 +47,11 @@ final class Invoice
         public readonly ?DateTimeImmutable $deliveryDate = null,
         public readonly FacturXProfile $profile = FacturXProfile::En16931,
     ) {
+    }
+
+    public static function builder(string $number): InvoiceBuilder
+    {
+        return InvoiceBuilder::make($number);
     }
 
     public function addLine(InvoiceLine $line): self

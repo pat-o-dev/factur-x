@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PatODev\FacturX\Model;
 
+use PatODev\FacturX\Builder\PartyBuilder;
+
 /**
  * Shared shape for BG-4 (Seller) and BG-7 (Buyer).
  */
@@ -23,5 +25,10 @@ final readonly class Party
         public ?Contact $contact = null,
         public ?ElectronicAddress $electronicAddress = null,
     ) {
+    }
+
+    public static function builder(string $name): PartyBuilder
+    {
+        return PartyBuilder::make($name);
     }
 }

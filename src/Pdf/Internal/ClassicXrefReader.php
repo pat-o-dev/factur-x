@@ -70,13 +70,24 @@ final class ClassicXrefReader
 
         $rootDict = $this->extractDictionary($pdf, $rootOffset + strlen($objMatch[0]));
 
-        foreach (['/Names', '/AF', '/Metadata'] as $forbidden) {
+        foreach (['/Names', '/AF'] as $forbidden) {
             if (str_contains($rootDict, $forbidden)) {
                 throw new UnsupportedPdfException(
                     "The PDF Catalog already declares {$forbidden}; merging with an existing ".
-                    'attachment/metadata tree is not supported in v1.',
+                    'attachment tree is not supported in v1.',
                 );
             }
+        }
+
+        $metadataObjectNumber = null;
+        if (str_contains($rootDict, '/Metadata')) {
+            if (! preg_match('/\/Metadata\s+(\d+)\s+\d+\s+R/', $rootDict, $metadataMatch)) {
+                throw new UnsupportedPdfException(
+                    'The PDF Catalog declares /Metadata as an inline value rather than an '
+                    .'indirect reference; this is not supported in v1.',
+                );
+            }
+            $metadataObjectNumber = (int) $metadataMatch[1];
         }
 
         return new PdfTrailer(
@@ -86,6 +97,7 @@ final class ClassicXrefReader
             xrefOffset: $xrefOffset,
             rootDictionary: $rootDict,
             rootObjectOffset: $rootOffset,
+            metadataObjectNumber: $metadataObjectNumber,
         );
     }
 

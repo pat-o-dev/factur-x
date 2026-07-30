@@ -14,6 +14,13 @@ final readonly class PdfTrailer
         public int $xrefOffset,
         public string $rootDictionary,
         public int $rootObjectOffset,
+        /**
+         * Object number of the Catalog's existing /Metadata stream, if any
+         * (common: mPDF/TCPDF always emit one in PDF/A mode). Reused in
+         * place — via the same incremental-update mechanism as the Root
+         * object — rather than rejected, since PDF/A conformance requires it.
+         */
+        public ?int $metadataObjectNumber = null,
     ) {
     }
 }

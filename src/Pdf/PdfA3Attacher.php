@@ -43,8 +43,9 @@ final class PdfA3Attacher
         $fileObjNum = $trailer->size;
         $filespecObjNum = $trailer->size + 1;
         $namesObjNum = $trailer->size + 2;
-        $metadataObjNum = $trailer->size + 3;
-        $newSize = $trailer->size + 4;
+        $isNewMetadataObject = $trailer->metadataObjectNumber === null;
+        $metadataObjNum = $trailer->metadataObjectNumber ?? $trailer->size + 3;
+        $newSize = $trailer->size + ($isNewMetadataObject ? 4 : 3);
 
         $appended = '';
         $cursor = strlen($pdfBytes);
@@ -82,7 +83,7 @@ final class PdfA3Attacher
             $appended,
             $cursor,
             $trailer->rootObjectNumber,
-            $this->updatedRootBody($trailer, $namesObjNum, $filespecObjNum, $metadataObjNum),
+            $this->updatedRootBody($trailer, $namesObjNum, $filespecObjNum, $metadataObjNum, $isNewMetadataObject),
         );
 
         ksort($offsets);
@@ -135,13 +136,23 @@ final class PdfA3Attacher
         return "<< /Type /Metadata /Subtype /XML /Length {$length} >>\nstream\n{$xmpPacket}\nendstream";
     }
 
-    private function updatedRootBody(PdfTrailer $trailer, int $namesObjNum, int $filespecObjNum, int $metadataObjNum): string
-    {
+    private function updatedRootBody(
+        PdfTrailer $trailer,
+        int $namesObjNum,
+        int $filespecObjNum,
+        int $metadataObjNum,
+        bool $isNewMetadataObject,
+    ): string {
         $inner = trim(substr($trailer->rootDictionary, 2, -2));
 
         $inner .= " /Names << /EmbeddedFiles {$namesObjNum} 0 R >>"
-            ." /AF [ {$filespecObjNum} 0 R ]"
-            ." /Metadata {$metadataObjNum} 0 R";
+            ." /AF [ {$filespecObjNum} 0 R ]";
+
+        // If /Metadata already pointed at this object number, the Catalog's
+        // existing reference stays valid as-is; only the object body changes.
+        if ($isNewMetadataObject) {
+            $inner .= " /Metadata {$metadataObjNum} 0 R";
+        }
 
         return "<< {$inner} >>";
     }

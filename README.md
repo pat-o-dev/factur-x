@@ -29,9 +29,11 @@ a later release.
   is already PDF/A-compliant (mPDF and TCPDF both ship a PDF/A mode) — this
   library only adds the Factur-X-specific attachment + metadata layer.
 - The PDF attacher only supports **classic (non cross-reference-stream),
-  unencrypted PDFs** whose Catalog does not already declare `/Names`, `/AF`
-  or `/Metadata`. Anything else raises `UnsupportedPdfException` rather than
-  silently producing a broken file.
+  unencrypted PDFs** whose Catalog does not already declare `/Names` or `/AF`
+  (an already-hybridized/attachment-bearing PDF). An existing `/Metadata`
+  reference (which mPDF/TCPDF always emit in PDF/A mode) is reused in place
+  rather than rejected. Anything unsupported raises `UnsupportedPdfException`
+  rather than silently producing a broken file.
 - The XML writer covers the fields most B2B invoices need (header
   identification, seller/buyer/delivery party, key references, notes, lines
   with allowances/charges, VAT breakdown, one payment mean, totals) but not

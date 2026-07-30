@@ -1,0 +1,42 @@
+{
+    "name": "pat-o-dev/factur-x",
+    "description": "Framework-agnostic PHP generator for Factur-X invoices (French e-invoicing reform, XP Z12-012 / EN 16931), producing CII D22B XML and hybrid PDF/A-3.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "factur-x",
+        "e-invoicing",
+        "facture-electronique",
+        "en16931",
+        "zugferd",
+        "cii",
+        "pdf/a-3"
+    ],
+    "authors": [
+        {
+            "name": "Pat-O-Dev"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-dom": "*",
+        "ext-libxml": "*"
+    },
+    "suggest": {
+        "ext-bcmath": "For exact-precision monetary rounding (Support\\Money); falls back to native round() otherwise."
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PatODev\\FacturX\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PatODev\\FacturX\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable"
+}

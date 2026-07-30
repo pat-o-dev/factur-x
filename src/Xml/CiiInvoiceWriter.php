@@ -142,7 +142,7 @@ final class CiiInvoiceWriter
 
         $delivery = $this->el($this->doc, self::RAM, 'ram:SpecifiedLineTradeDelivery');
         $qty = $this->el($this->doc, self::RAM, 'ram:BilledQuantity', Money::format($line->quantity, 4));
-        $qty->setAttribute('unitCode', $line->unitCode);
+        $qty->setAttribute('unitCode', $line->unitCode->value);
         $delivery->appendChild($qty);
         $item->appendChild($delivery);
 

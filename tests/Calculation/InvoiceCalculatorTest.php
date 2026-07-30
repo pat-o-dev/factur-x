@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PatODev\FacturX\Tests\Calculation;
 
 use PatODev\FacturX\Calculation\InvoiceCalculator;
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
 use PatODev\FacturX\Model\AllowanceCharge;
 use PatODev\FacturX\Model\InvoiceLine;
@@ -71,7 +72,7 @@ final class InvoiceCalculatorTest extends TestCase
             lineId: '1',
             itemName: 'Article à arrondi de TVA pile',
             quantity: 1.0,
-            unitCode: 'C62',
+            unitCode: UnitOfMeasureCode::Piece,
             netUnitPrice: 8.75,
             vatCategory: VatCategory::Standard,
             vatRate: 10.0,
@@ -99,7 +100,7 @@ final class InvoiceCalculatorTest extends TestCase
             lineId: '1',
             itemName: 'Pièces au détail',
             quantity: 3.0,
-            unitCode: 'C62',
+            unitCode: UnitOfMeasureCode::Piece,
             netUnitPrice: 33.333,
             vatCategory: VatCategory::Standard,
             vatRate: 5.5,
@@ -108,7 +109,7 @@ final class InvoiceCalculatorTest extends TestCase
             lineId: '2',
             itemName: 'Consommation mesurée',
             quantity: 2.5,
-            unitCode: 'MTQ',
+            unitCode: UnitOfMeasureCode::CubicMetre,
             netUnitPrice: 16.014,
             vatCategory: VatCategory::Standard,
             vatRate: 5.5,
@@ -143,7 +144,7 @@ final class InvoiceCalculatorTest extends TestCase
             lineId: '1',
             itemName: 'Prestation standard',
             quantity: 1.0,
-            unitCode: 'C62',
+            unitCode: UnitOfMeasureCode::Piece,
             netUnitPrice: 19.99,
             vatCategory: VatCategory::Standard,
             vatRate: 20.0,
@@ -152,7 +153,7 @@ final class InvoiceCalculatorTest extends TestCase
             lineId: '2',
             itemName: 'Produit alimentaire',
             quantity: 3.0,
-            unitCode: 'C62',
+            unitCode: UnitOfMeasureCode::Piece,
             netUnitPrice: 4.33,
             vatCategory: VatCategory::Standard,
             vatRate: 5.5,

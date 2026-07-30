@@ -7,6 +7,7 @@ namespace PatODev\FacturX\Builder;
 use DateTimeImmutable;
 use PatODev\FacturX\Enum\FacturXProfile;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Model\AllowanceCharge;
 use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Model\InvoiceLine;
@@ -201,7 +202,7 @@ final class InvoiceBuilder
     public function line(
         string $itemName,
         float $quantity,
-        string $unitCode,
+        UnitOfMeasureCode $unitCode,
         float $netUnitPrice,
         ?string $lineId = null,
         \PatODev\FacturX\Enum\VatCategory $vatCategory = \PatODev\FacturX\Enum\VatCategory::Standard,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PatODev\FacturX\Model;
 
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
 use PatODev\FacturX\Support\Money;
 
@@ -16,7 +17,6 @@ use PatODev\FacturX\Support\Money;
 final class InvoiceLine
 {
     /**
-     * @param  string  $unitCode  UN/ECE Recommendation 20 unit code (e.g. "C62" for piece, "KGM" for kg)
      * @param  AllowanceCharge[]  $allowances
      * @param  AllowanceCharge[]  $charges
      */
@@ -24,7 +24,7 @@ final class InvoiceLine
         public readonly string $lineId,
         public readonly string $itemName,
         public readonly float $quantity,
-        public readonly string $unitCode,
+        public readonly UnitOfMeasureCode $unitCode,
         public readonly float $netUnitPrice,
         public readonly VatCategory $vatCategory,
         public readonly ?float $vatRate = null,

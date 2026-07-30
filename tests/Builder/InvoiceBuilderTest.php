@@ -6,6 +6,7 @@ namespace PatODev\FacturX\Tests\Builder;
 
 use DateTimeImmutable;
 use LogicException;
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
 use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Model\Party;
@@ -36,7 +37,7 @@ final class InvoiceBuilderTest extends TestCase
                 lineId: '1',
                 itemName: 'Prestation de transport',
                 quantity: 2.0,
-                unitCode: 'C62',
+                unitCode: UnitOfMeasureCode::Piece,
                 netUnitPrice: 100.0,
                 vatCategory: VatCategory::Standard,
                 vatRate: 20.0,
@@ -69,8 +70,8 @@ final class InvoiceBuilderTest extends TestCase
         $invoice = Invoice::builder('F1')
             ->seller($this->minimalParty('Seller'))
             ->buyer($this->minimalParty('Buyer'))
-            ->line(itemName: 'A', quantity: 1.0, unitCode: 'C62', netUnitPrice: 10.0, vatRate: 20.0)
-            ->line(itemName: 'B', quantity: 1.0, unitCode: 'C62', netUnitPrice: 10.0, vatRate: 20.0)
+            ->line(itemName: 'A', quantity: 1.0, unitCode: UnitOfMeasureCode::Piece, netUnitPrice: 10.0, vatRate: 20.0)
+            ->line(itemName: 'B', quantity: 1.0, unitCode: UnitOfMeasureCode::Piece, netUnitPrice: 10.0, vatRate: 20.0)
             ->build();
 
         self::assertSame('1', $invoice->lines()[0]->lineId);

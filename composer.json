@@ -38,5 +38,10 @@
             "PatODev\\FacturX\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.3.x-dev"
+        }
+    }
 }

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DOMDocument;
 use DOMXPath;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
 use PatODev\FacturX\Model\AllowanceCharge;
 use PatODev\FacturX\Model\Invoice;
@@ -112,7 +113,7 @@ final class InvoiceValidatorTest extends TestCase
             lineId: '1',
             itemName: 'Prestation de transport',
             quantity: 2.0,
-            unitCode: 'C62',
+            unitCode: UnitOfMeasureCode::Piece,
             netUnitPrice: 100.0,
             vatCategory: VatCategory::Standard,
             vatRate: 20.0,

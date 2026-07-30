@@ -2,7 +2,7 @@
 
 Framework-agnostic PHP library to generate **Factur-X** invoices for the French
 e-invoicing reform (norme AFNOR XP Z12-012 / EN 16931), in pure PHP with no
-Laravel/Symfony dependency. Pairs with [`pat-o-dev/laravel-factur-x`](../laravel-factur-x)
+Laravel/Symfony dependency. Pairs with [`pat-o-dev/factur-x-laravel`](../factur-x-laravel)
 for Laravel projects; a Symfony bundle can reuse this package the same way.
 
 Most existing open-source Factur-X/ZUGFeRD libraries are built and documented
@@ -44,6 +44,7 @@ a later release.
 
 ```php
 use PatODev\FacturX\Enum\InvoiceTypeCode;
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
 use PatODev\FacturX\FacturXGenerator;
 use PatODev\FacturX\Model\{Address, Invoice, InvoiceLine, Party};
@@ -73,7 +74,7 @@ $invoice->addLine(new InvoiceLine(
     lineId: '1',
     itemName: 'Prestation de transport',
     quantity: 2.0,
-    unitCode: 'C62',
+    unitCode: UnitOfMeasureCode::Piece,
     netUnitPrice: 100.0,
     vatCategory: VatCategory::Standard,
     vatRate: 20.0,

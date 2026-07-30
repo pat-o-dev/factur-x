@@ -90,7 +90,7 @@ final class CiiInvoiceWriter
         foreach ($invoice->notes() as $note) {
             $noteEl = $this->el($this->doc, self::RAM, 'ram:IncludedNote');
             if ($note->subjectCode !== null) {
-                $noteEl->appendChild($this->el($this->doc, self::RAM, 'ram:SubjectCode', $note->subjectCode));
+                $noteEl->appendChild($this->el($this->doc, self::RAM, 'ram:SubjectCode', $note->subjectCode->value));
             }
             $noteEl->appendChild($this->el($this->doc, self::RAM, 'ram:Content', $note->content));
             $document->appendChild($noteEl);
@@ -155,7 +155,7 @@ final class CiiInvoiceWriter
         }
         $tax->appendChild($this->el($this->doc, self::RAM, 'ram:CategoryCode', $line->vatCategory->value));
         if ($line->vatExemptionReasonCode !== null) {
-            $tax->appendChild($this->el($this->doc, self::RAM, 'ram:ExemptionReasonCode', $line->vatExemptionReasonCode));
+            $tax->appendChild($this->el($this->doc, self::RAM, 'ram:ExemptionReasonCode', $line->vatExemptionReasonCode->value));
         }
         if ($line->vatRate !== null) {
             $tax->appendChild($this->amountEl('ram:RateApplicablePercent', $line->vatRate, decimals: 2));
@@ -268,12 +268,12 @@ final class CiiInvoiceWriter
     {
         $settlement = $this->el($this->doc, self::RAM, 'ram:ApplicableHeaderTradeSettlement');
 
-        $settlement->appendChild($this->el($this->doc, self::RAM, 'ram:InvoiceCurrencyCode', $invoice->currencyCode));
+        $settlement->appendChild($this->el($this->doc, self::RAM, 'ram:InvoiceCurrencyCode', $invoice->currencyCode->value));
 
         if ($invoice->paymentMeans !== null) {
             $means = $invoice->paymentMeans;
             $meansEl = $this->el($this->doc, self::RAM, 'ram:SpecifiedTradeSettlementPaymentMeans');
-            $meansEl->appendChild($this->el($this->doc, self::RAM, 'ram:TypeCode', $means->typeCode));
+            $meansEl->appendChild($this->el($this->doc, self::RAM, 'ram:TypeCode', $means->typeCode->value));
             if ($means->iban !== null) {
                 $account = $this->el($this->doc, self::RAM, 'ram:PayeePartyCreditorFinancialAccount');
                 $account->appendChild($this->el($this->doc, self::RAM, 'ram:IBANID', $means->iban));
@@ -316,7 +316,7 @@ final class CiiInvoiceWriter
         }
 
         $totals = $this->calculator->totals($invoice, $prepaidAmount, $roundingAmount);
-        $settlement->appendChild($this->buildMonetarySummation($totals, $invoice->currencyCode));
+        $settlement->appendChild($this->buildMonetarySummation($totals, $invoice->currencyCode->value));
 
         if ($invoice->precedingInvoiceNumber !== null) {
             $preceding = $this->el($this->doc, self::RAM, 'ram:InvoiceReferencedDocument');
@@ -343,7 +343,7 @@ final class CiiInvoiceWriter
         $tax->appendChild($this->amountEl('ram:BasisAmount', $entry->taxableAmount));
         $tax->appendChild($this->el($this->doc, self::RAM, 'ram:CategoryCode', $entry->category->value));
         if ($entry->exemptionReasonCode !== null) {
-            $tax->appendChild($this->el($this->doc, self::RAM, 'ram:ExemptionReasonCode', $entry->exemptionReasonCode));
+            $tax->appendChild($this->el($this->doc, self::RAM, 'ram:ExemptionReasonCode', $entry->exemptionReasonCode->value));
         }
         if ($entry->rate !== null) {
             $tax->appendChild($this->amountEl('ram:RateApplicablePercent', $entry->rate, decimals: 2));
@@ -390,7 +390,7 @@ final class CiiInvoiceWriter
             /** @var Identifier $identifier */
             $idEl = $this->el($this->doc, self::RAM, 'ram:GlobalID', $identifier->value);
             if ($identifier->schemeId !== null) {
-                $idEl->setAttribute('schemeID', $identifier->schemeId);
+                $idEl->setAttribute('schemeID', $identifier->schemeId->value);
             }
             $el->appendChild($idEl);
         }
@@ -411,7 +411,7 @@ final class CiiInvoiceWriter
         if ($party->electronicAddress !== null) {
             $uri = $this->el($this->doc, self::RAM, 'ram:URIUniversalCommunication');
             $uriId = $this->el($this->doc, self::RAM, 'ram:URIID', $party->electronicAddress->value);
-            $uriId->setAttribute('schemeID', $party->electronicAddress->schemeId);
+            $uriId->setAttribute('schemeID', $party->electronicAddress->schemeId->value);
             $uri->appendChild($uriId);
             $el->appendChild($uri);
         }

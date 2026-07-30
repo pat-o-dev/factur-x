@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PatODev\FacturX\Calculation;
 
 use PatODev\FacturX\Enum\VatCategory;
+use PatODev\FacturX\Enum\VatExemptionReasonCode;
 
 /** One row of BG-23 (VAT breakdown), grouped by category + rate + exemption reason. */
 final readonly class VatBreakdownEntry
@@ -15,7 +16,7 @@ final readonly class VatBreakdownEntry
         public float $taxableAmount,
         public float $taxAmount,
         public ?string $exemptionReasonText = null,
-        public ?string $exemptionReasonCode = null,
+        public ?VatExemptionReasonCode $exemptionReasonCode = null,
     ) {
     }
 
@@ -25,7 +26,7 @@ final readonly class VatBreakdownEntry
             $this->category->value,
             $this->rate !== null ? (string) $this->rate : '',
             $this->exemptionReasonText ?? '',
-            $this->exemptionReasonCode ?? '',
+            $this->exemptionReasonCode?->value ?? '',
         ]);
     }
 }

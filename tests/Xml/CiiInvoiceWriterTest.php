@@ -77,7 +77,7 @@ final class CiiInvoiceWriterTest extends TestCase
         $node = $xpath->query('//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount')?->item(0);
 
         self::assertNotNull($node);
-        self::assertSame($invoice->currencyCode, $node->attributes?->getNamedItem('currencyID')?->textContent);
+        self::assertSame($invoice->currencyCode->value, $node->attributes?->getNamedItem('currencyID')?->textContent);
     }
 
     private function text(DOMXPath $xpath, string $query): ?string

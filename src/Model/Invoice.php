@@ -6,6 +6,7 @@ namespace PatODev\FacturX\Model;
 
 use DateTimeImmutable;
 use PatODev\FacturX\Builder\InvoiceBuilder;
+use PatODev\FacturX\Enum\CurrencyCode;
 use PatODev\FacturX\Enum\FacturXProfile;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
 
@@ -34,7 +35,7 @@ final class Invoice
         public readonly InvoiceTypeCode $typeCode,
         public readonly Party $seller,
         public readonly Party $buyer,
-        public readonly string $currencyCode = 'EUR',
+        public readonly CurrencyCode $currencyCode = CurrencyCode::Euro,
         public readonly ?DateTimeImmutable $dueDate = null,
         public readonly ?string $buyerReference = null,
         public readonly ?string $purchaseOrderReference = null,

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PatODev\FacturX\Builder;
 
+use PatODev\FacturX\Enum\ElectronicAddressScheme;
+use PatODev\FacturX\Enum\PartyIdentifierScheme;
 use PatODev\FacturX\Model\Address;
 use PatODev\FacturX\Model\Contact;
 use PatODev\FacturX\Model\ElectronicAddress;
@@ -83,7 +85,7 @@ final class PartyBuilder
         return $this;
     }
 
-    public function privateIdentifier(string $value, ?string $schemeId = null): self
+    public function privateIdentifier(string $value, ?PartyIdentifierScheme $schemeId = null): self
     {
         $this->privateIdentifiers[] = new Identifier($value, $schemeId);
 
@@ -97,7 +99,7 @@ final class PartyBuilder
         return $this;
     }
 
-    public function electronicAddress(string $value, string $schemeId = 'EM'): self
+    public function electronicAddress(string $value, ElectronicAddressScheme $schemeId = ElectronicAddressScheme::Email): self
     {
         $this->electronicAddress = new ElectronicAddress($value, $schemeId);
 

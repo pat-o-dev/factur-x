@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace PatODev\FacturX\Builder;
 
 use DateTimeImmutable;
+use PatODev\FacturX\Enum\CurrencyCode;
 use PatODev\FacturX\Enum\FacturXProfile;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
+use PatODev\FacturX\Enum\NoteSubjectCode;
 use PatODev\FacturX\Enum\UnitOfMeasureCode;
+use PatODev\FacturX\Enum\VatExemptionReasonCode;
 use PatODev\FacturX\Model\AllowanceCharge;
 use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Model\InvoiceLine;
@@ -26,7 +29,7 @@ final class InvoiceBuilder
 
     private InvoiceTypeCode $typeCode = InvoiceTypeCode::CommercialInvoice;
 
-    private string $currencyCode = 'EUR';
+    private CurrencyCode $currencyCode = CurrencyCode::Euro;
 
     private ?DateTimeImmutable $dueDate = null;
 
@@ -92,7 +95,7 @@ final class InvoiceBuilder
         return $this;
     }
 
-    public function currency(string $currencyCode): self
+    public function currency(CurrencyCode $currencyCode): self
     {
         $this->currencyCode = $currencyCode;
 
@@ -210,7 +213,7 @@ final class InvoiceBuilder
         ?string $itemDescription = null,
         ?float $grossUnitPrice = null,
         ?string $vatExemptionReasonText = null,
-        ?string $vatExemptionReasonCode = null,
+        ?VatExemptionReasonCode $vatExemptionReasonCode = null,
         ?string $buyerOrderLineReference = null,
         array $allowances = [],
         array $charges = [],
@@ -247,7 +250,7 @@ final class InvoiceBuilder
         return $this;
     }
 
-    public function note(string $content, ?string $subjectCode = null): self
+    public function note(string $content, ?NoteSubjectCode $subjectCode = null): self
     {
         $this->notes[] = new Note($content, $subjectCode);
 

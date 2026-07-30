@@ -6,6 +6,7 @@ namespace PatODev\FacturX\Model;
 
 use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
+use PatODev\FacturX\Enum\VatExemptionReasonCode;
 use PatODev\FacturX\Support\Money;
 
 /**
@@ -31,7 +32,7 @@ final class InvoiceLine
         public readonly ?string $itemDescription = null,
         public readonly ?float $grossUnitPrice = null,
         public readonly ?string $vatExemptionReasonText = null,
-        public readonly ?string $vatExemptionReasonCode = null,
+        public readonly ?VatExemptionReasonCode $vatExemptionReasonCode = null,
         public readonly ?string $buyerOrderLineReference = null,
         public readonly array $allowances = [],
         public readonly array $charges = [],

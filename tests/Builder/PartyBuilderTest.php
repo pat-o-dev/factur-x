@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PatODev\FacturX\Tests\Builder;
 
 use LogicException;
+use PatODev\FacturX\Enum\ElectronicAddressScheme;
+use PatODev\FacturX\Enum\PartyIdentifierScheme;
 use PatODev\FacturX\Model\Party;
 use PHPUnit\Framework\TestCase;
 
@@ -17,8 +19,8 @@ final class PartyBuilderTest extends TestCase
             ->vatNumber('FR12123456789')
             ->legalRegistrationId('123456789')
             ->contact(name: 'Jean Dupont', email: 'jean@acme.example')
-            ->electronicAddress('0009123456789', '0009')
-            ->privateIdentifier('123456789', '0009')
+            ->electronicAddress('987654321', ElectronicAddressScheme::FrancePpf)
+            ->privateIdentifier('123456789', PartyIdentifierScheme::Siret)
             ->build();
 
         self::assertSame('ACME Transport SARL', $party->name);
@@ -26,7 +28,7 @@ final class PartyBuilderTest extends TestCase
         self::assertSame('FR12123456789', $party->vatNumber);
         self::assertSame('123456789', $party->legalRegistrationId);
         self::assertSame('Jean Dupont', $party->contact?->name);
-        self::assertSame('0009123456789', $party->electronicAddress?->value);
+        self::assertSame('987654321', $party->electronicAddress?->value);
         self::assertCount(1, $party->privateIdentifiers);
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PatODev\FacturX\Calculation;
 
+use PatODev\FacturX\Enum\VatExemptionReasonCode;
 use PatODev\FacturX\Model\AllowanceCharge;
 use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Support\Money;
@@ -56,7 +57,7 @@ final class InvoiceCalculator
      */
     public function vatBreakdown(Invoice $invoice): array
     {
-        /** @var array<string, array{category: \PatODev\FacturX\Enum\VatCategory, rate: ?float, reasonText: ?string, reasonCode: ?string, base: float}> $groups */
+        /** @var array<string, array{category: \PatODev\FacturX\Enum\VatCategory, rate: ?float, reasonText: ?string, reasonCode: ?VatExemptionReasonCode, base: float}> $groups */
         $groups = [];
 
         foreach ($invoice->lines() as $line) {
@@ -92,7 +93,7 @@ final class InvoiceCalculator
         ));
     }
 
-    /** @param array<string, array{category: mixed, rate: ?float, reasonText: ?string, reasonCode: ?string, base: float}> $groups */
+    /** @param array<string, array{category: mixed, rate: ?float, reasonText: ?string, reasonCode: ?VatExemptionReasonCode, base: float}> $groups */
     private function foldAllowanceCharge(array &$groups, AllowanceCharge $item, int $sign): void
     {
         $key = $this->groupKey($item->vatCategory->value, $item->vatRate, null, null);
@@ -106,9 +107,9 @@ final class InvoiceCalculator
         $groups[$key]['base'] += $sign * $item->amount;
     }
 
-    private function groupKey(string $category, ?float $rate, ?string $reasonText, ?string $reasonCode): string
+    private function groupKey(string $category, ?float $rate, ?string $reasonText, ?VatExemptionReasonCode $reasonCode): string
     {
-        return implode('|', [$category, $rate !== null ? (string) $rate : '', $reasonText ?? '', $reasonCode ?? '']);
+        return implode('|', [$category, $rate !== null ? (string) $rate : '', $reasonText ?? '', $reasonCode?->value ?? '']);
     }
 
     /** @param AllowanceCharge[] $items */

@@ -57,6 +57,8 @@ final class InvoiceBuilder
 
     private ?DateTimeImmutable $deliveryDate = null;
 
+    private ?Party $payeeParty = null;
+
     private FacturXProfile $profile = FacturXProfile::En16931;
 
     /** @var InvoiceLine[] */
@@ -184,6 +186,14 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /** BG-10: the party payment should be sent to, if different from the seller. */
+    public function payeeParty(Party $party): self
+    {
+        $this->payeeParty = $party;
+
+        return $this;
+    }
+
     public function profile(FacturXProfile $profile): self
     {
         $this->profile = $profile;
@@ -287,6 +297,7 @@ final class InvoiceBuilder
             paymentMeans: $this->paymentMeans,
             deliveryParty: $this->deliveryParty,
             deliveryDate: $this->deliveryDate,
+            payeeParty: $this->payeeParty,
             profile: $this->profile,
         );
 

@@ -7,7 +7,8 @@ namespace PatODev\FacturX\Model;
 use PatODev\FacturX\Builder\PartyBuilder;
 
 /**
- * Shared shape for BG-4 (Seller) and BG-7 (Buyer).
+ * Shared shape for BG-4 (Seller), BG-7 (Buyer), BG-10 (Payee) and the
+ * ship-to party of BG-13 (Delivery information).
  */
 final readonly class Party
 {

@@ -79,6 +79,35 @@ final class InvoiceBuilderTest extends TestCase
         self::assertSame(VatCategory::Standard, $invoice->lines()[0]->vatCategory);
     }
 
+    public function test_delivery_party_and_payee_party_are_optional_and_independent(): void
+    {
+        $warehouse = $this->minimalParty('Entrepôt');
+        $factor = $this->minimalParty('Factor Finance');
+
+        $invoice = Invoice::builder('F1')
+            ->seller($this->minimalParty('Seller'))
+            ->buyer($this->minimalParty('Buyer'))
+            ->deliveryParty($warehouse, new DateTimeImmutable('2026-01-20'))
+            ->payeeParty($factor)
+            ->build();
+
+        self::assertSame('Entrepôt', $invoice->deliveryParty?->name);
+        self::assertEquals(new DateTimeImmutable('2026-01-20'), $invoice->deliveryDate);
+        self::assertSame('Factor Finance', $invoice->payeeParty?->name);
+    }
+
+    public function test_delivery_and_payee_party_default_to_null(): void
+    {
+        $invoice = Invoice::builder('F1')
+            ->seller($this->minimalParty('Seller'))
+            ->buyer($this->minimalParty('Buyer'))
+            ->build();
+
+        self::assertNull($invoice->deliveryParty);
+        self::assertNull($invoice->deliveryDate);
+        self::assertNull($invoice->payeeParty);
+    }
+
     public function test_rejects_building_without_a_seller(): void
     {
         $this->expectException(LogicException::class);

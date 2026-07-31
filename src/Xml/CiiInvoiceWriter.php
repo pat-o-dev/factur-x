@@ -20,8 +20,8 @@ use PatODev\FacturX\Support\Money;
  * Builds the UN/CEFACT Cross Industry Invoice (D22B) XML for the EN 16931
  * profile, i.e. the "factur-x.xml" attachment (XP Z12-012 §4.8.7).
  *
- * Field coverage (v1): header identification, seller/buyer/delivery party,
- * references (BT-10/12/13/25/26), notes, lines with line-level
+ * Field coverage (v1): header identification, seller/buyer/delivery/payee
+ * party, references (BT-10/12/13/25/26), notes, lines with line-level
  * allowances/charges, VAT breakdown, document-level allowances/charges,
  * monetary summation and a single SEPA credit transfer payment mean.
  * Not yet covered: multi-party extensions, attachments (BG-24), multiple
@@ -269,6 +269,10 @@ final class CiiInvoiceWriter
         $settlement = $this->el($this->doc, self::RAM, 'ram:ApplicableHeaderTradeSettlement');
 
         $settlement->appendChild($this->el($this->doc, self::RAM, 'ram:InvoiceCurrencyCode', $invoice->currencyCode->value));
+
+        if ($invoice->payeeParty !== null) {
+            $settlement->appendChild($this->buildTradeParty('ram:PayeeTradeParty', $invoice->payeeParty));
+        }
 
         if ($invoice->paymentMeans !== null) {
             $means = $invoice->paymentMeans;

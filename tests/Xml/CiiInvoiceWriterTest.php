@@ -8,8 +8,11 @@ use DateTimeImmutable;
 use DOMDocument;
 use DOMXPath;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
+use PatODev\FacturX\Enum\UnitOfMeasureCode;
+use PatODev\FacturX\Enum\VatCategory;
 use PatODev\FacturX\Model\Address;
 use PatODev\FacturX\Model\Invoice;
+use PatODev\FacturX\Model\InvoiceLine;
 use PatODev\FacturX\Model\Party;
 use PatODev\FacturX\Tests\Support\InvoiceFactory;
 use PatODev\FacturX\Xml\CiiInvoiceWriter;
@@ -70,6 +73,53 @@ final class CiiInvoiceWriterTest extends TestCase
             '240.00',
             $this->text($xpath, '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:GrandTotalAmount'),
         );
+    }
+
+    public function test_writes_bg_31_item_information_when_present(): void
+    {
+        $invoice = InvoiceFactory::blank();
+        $invoice->addLine(new InvoiceLine(
+            lineId: '1',
+            itemName: 'Composants électroniques',
+            quantity: 10.0,
+            unitCode: UnitOfMeasureCode::Piece,
+            netUnitPrice: 15.0,
+            vatCategory: VatCategory::Standard,
+            vatRate: 20.0,
+            sellerAssignedId: 'SKU-1234',
+            buyerAssignedId: 'REF-5678',
+            originCountryCode: 'CN',
+            classificationCode: '8541.10',
+            classificationScheme: 'HS',
+        ));
+
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+        $xpath = $this->xpath($xml);
+
+        self::assertSame('SKU-1234', $this->text($xpath, '//ram:SpecifiedTradeProduct/ram:SellerAssignedID'));
+        self::assertSame('REF-5678', $this->text($xpath, '//ram:SpecifiedTradeProduct/ram:BuyerAssignedID'));
+        self::assertSame(
+            '8541.10',
+            $this->text($xpath, '//ram:SpecifiedTradeProduct/ram:DesignatedProductClassification/ram:ClassCode'),
+        );
+        $classCode = $xpath->query('//ram:SpecifiedTradeProduct/ram:DesignatedProductClassification/ram:ClassCode')?->item(0);
+        self::assertNotNull($classCode);
+        self::assertSame('HS', $classCode->attributes?->getNamedItem('listID')?->textContent);
+        self::assertSame(
+            'CN',
+            $this->text($xpath, '//ram:SpecifiedTradeProduct/ram:OriginTradeCountry/ram:ID'),
+        );
+    }
+
+    public function test_omits_bg_31_item_information_when_absent(): void
+    {
+        $xml = (new CiiInvoiceWriter())->toXmlString(InvoiceFactory::simple());
+        $xpath = $this->xpath($xml);
+
+        self::assertSame(0, $xpath->query('//ram:SpecifiedTradeProduct/ram:SellerAssignedID')?->count());
+        self::assertSame(0, $xpath->query('//ram:SpecifiedTradeProduct/ram:BuyerAssignedID')?->count());
+        self::assertSame(0, $xpath->query('//ram:SpecifiedTradeProduct/ram:DesignatedProductClassification')?->count());
+        self::assertSame(0, $xpath->query('//ram:SpecifiedTradeProduct/ram:OriginTradeCountry')?->count());
     }
 
     public function test_tax_total_amount_carries_the_invoice_currency_id(): void

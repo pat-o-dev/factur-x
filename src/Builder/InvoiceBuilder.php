@@ -238,6 +238,11 @@ final class InvoiceBuilder
         ?string $vatExemptionReasonText = null,
         ?VatExemptionReasonCode $vatExemptionReasonCode = null,
         ?string $buyerOrderLineReference = null,
+        ?string $sellerAssignedId = null,
+        ?string $buyerAssignedId = null,
+        ?string $originCountryCode = null,
+        ?string $classificationCode = null,
+        ?string $classificationScheme = null,
         array $allowances = [],
         array $charges = [],
     ): self {
@@ -254,6 +259,11 @@ final class InvoiceBuilder
             vatExemptionReasonText: $vatExemptionReasonText,
             vatExemptionReasonCode: $vatExemptionReasonCode,
             buyerOrderLineReference: $buyerOrderLineReference,
+            sellerAssignedId: $sellerAssignedId,
+            buyerAssignedId: $buyerAssignedId,
+            originCountryCode: $originCountryCode,
+            classificationCode: $classificationCode,
+            classificationScheme: $classificationScheme,
             allowances: $allowances,
             charges: $charges,
         ));

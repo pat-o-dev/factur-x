@@ -10,7 +10,11 @@ use PatODev\FacturX\Enum\VatExemptionReasonCode;
 use PatODev\FacturX\Support\Money;
 
 /**
- * A single invoice line (BG-25).
+ * A single invoice line (BG-25). sellerAssignedId/buyerAssignedId are BG-31's
+ * BT-155/BT-156 (item identifiers, e.g. SKUs). originCountryCode/
+ * classificationCode(Scheme) are BT-159 (item country of origin) and
+ * BT-158/BT-158-1 (item classification identifier + scheme, e.g. a customs
+ * tariff code).
  *
  * @property-read AllowanceCharge[] $allowances line-level rebates (BG-27)
  * @property-read AllowanceCharge[] $charges    line-level charges (BG-28)
@@ -34,6 +38,11 @@ final class InvoiceLine
         public readonly ?string $vatExemptionReasonText = null,
         public readonly ?VatExemptionReasonCode $vatExemptionReasonCode = null,
         public readonly ?string $buyerOrderLineReference = null,
+        public readonly ?string $sellerAssignedId = null,
+        public readonly ?string $buyerAssignedId = null,
+        public readonly ?string $originCountryCode = null,
+        public readonly ?string $classificationCode = null,
+        public readonly ?string $classificationScheme = null,
         public readonly array $allowances = [],
         public readonly array $charges = [],
     ) {

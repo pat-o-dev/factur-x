@@ -23,9 +23,10 @@ use PatODev\FacturX\Support\Money;
  *
  * Field coverage (v1): header identification, seller/buyer/delivery/payee
  * party, references (BT-10/12/13/25/26), notes, billing period (BT-73/74),
- * lines with line-level allowances/charges, VAT breakdown, document-level
- * allowances/charges, monetary summation and a single SEPA credit transfer
- * payment mean.
+ * lines with line-level allowances/charges, item identifiers, classification
+ * and country of origin (BG-31, BT-155/156/158/159), VAT breakdown,
+ * document-level allowances/charges, monetary summation and a single SEPA
+ * credit transfer payment mean.
  * Not yet covered: multi-party extensions, attachments (BG-24), multiple
  * payment means, sub-lines. Tracked for a future release.
  */
@@ -125,9 +126,29 @@ final class CiiInvoiceWriter
         $item->appendChild($lineDoc);
 
         $product = $this->el($this->doc, self::RAM, 'ram:SpecifiedTradeProduct');
+        if ($line->sellerAssignedId !== null) {
+            $product->appendChild($this->el($this->doc, self::RAM, 'ram:SellerAssignedID', $line->sellerAssignedId));
+        }
+        if ($line->buyerAssignedId !== null) {
+            $product->appendChild($this->el($this->doc, self::RAM, 'ram:BuyerAssignedID', $line->buyerAssignedId));
+        }
         $product->appendChild($this->el($this->doc, self::RAM, 'ram:Name', $line->itemName));
         if ($line->itemDescription !== null) {
             $product->appendChild($this->el($this->doc, self::RAM, 'ram:Description', $line->itemDescription));
+        }
+        if ($line->classificationCode !== null) {
+            $classification = $this->el($this->doc, self::RAM, 'ram:DesignatedProductClassification');
+            $classCode = $this->el($this->doc, self::RAM, 'ram:ClassCode', $line->classificationCode);
+            if ($line->classificationScheme !== null) {
+                $classCode->setAttribute('listID', $line->classificationScheme);
+            }
+            $classification->appendChild($classCode);
+            $product->appendChild($classification);
+        }
+        if ($line->originCountryCode !== null) {
+            $origin = $this->el($this->doc, self::RAM, 'ram:OriginTradeCountry');
+            $origin->appendChild($this->el($this->doc, self::RAM, 'ram:ID', $line->originCountryCode));
+            $product->appendChild($origin);
         }
         $item->appendChild($product);
 

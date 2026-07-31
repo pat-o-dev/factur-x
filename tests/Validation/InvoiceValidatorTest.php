@@ -18,6 +18,7 @@ use PatODev\FacturX\Validation\InvoiceValidator;
 use PatODev\FacturX\Validation\RuleResult;
 use PatODev\FacturX\Validation\ValidationReport;
 use PatODev\FacturX\Xml\CiiInvoiceWriter;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class InvoiceValidatorTest extends TestCase
@@ -96,6 +97,42 @@ final class InvoiceValidatorTest extends TestCase
         $report = (new InvoiceValidator())->validate($xml);
 
         self::assertFalse($this->ruleResult($report, 'BR-CO-5-6')->passed);
+    }
+
+    public function test_br_fr_map_12_fails_on_a_disallowed_vat_rate(): void
+    {
+        $xml = $this->mutate($this->baselineXml(), function (DOMXPath $xpath): void {
+            $node = $xpath->query('//ram:RateApplicablePercent')->item(0);
+            $node->textContent = '15.00';
+        });
+
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertFalse($this->ruleResult($report, 'BR-FR-MAP-12')->passed);
+    }
+
+    /** @return array<string, array{float}> */
+    public static function allowedVatRateProvider(): array
+    {
+        return [
+            '0' => [0.0], '10' => [10.0], '13' => [13.0], '20' => [20.0],
+            '8.5' => [8.5], '19.6' => [19.6], '2.1' => [2.1], '5.5' => [5.5],
+            '7' => [7.0], '20.6' => [20.6], '1.05' => [1.05], '0.9' => [0.9],
+            '1.75' => [1.75], '9.2' => [9.2], '9.6' => [9.6],
+        ];
+    }
+
+    #[DataProvider('allowedVatRateProvider')]
+    public function test_br_fr_map_12_passes_for_every_allowed_vat_rate(float $rate): void
+    {
+        $xml = $this->mutate($this->baselineXml(), function (DOMXPath $xpath) use ($rate): void {
+            $node = $xpath->query('//ram:RateApplicablePercent')->item(0);
+            $node->textContent = number_format($rate, 2, '.', '');
+        });
+
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertTrue($this->ruleResult($report, 'BR-FR-MAP-12')->passed);
     }
 
     private function baselineInvoice(): Invoice

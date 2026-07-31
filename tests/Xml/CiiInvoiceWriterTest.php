@@ -13,6 +13,7 @@ use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Model\Party;
 use PatODev\FacturX\Tests\Support\InvoiceFactory;
 use PatODev\FacturX\Xml\CiiInvoiceWriter;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class CiiInvoiceWriterTest extends TestCase
@@ -156,6 +157,74 @@ final class CiiInvoiceWriterTest extends TestCase
         $xpath = $this->xpath($xml);
 
         self::assertSame(0, $xpath->query('//ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty')?->count());
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function domComCountryCodeProvider(): array
+    {
+        return [
+            'Guyane française' => ['GF'],
+            'Terres australes françaises' => ['TF'],
+            'Guadeloupe' => ['GP'],
+            'Guyana' => ['GY'],
+            'Martinique' => ['MQ'],
+            'Mayotte' => ['YT'],
+            'Réunion' => ['RE'],
+            'Saint-Barthélemy' => ['BL'],
+            'Saint-Martin' => ['MF'],
+            'Saint-Pierre-et-Miquelon' => ['PM'],
+        ];
+    }
+
+    #[DataProvider('domComCountryCodeProvider')]
+    public function test_br_fr_map_14_reports_dom_com_country_codes_as_fr(string $domComCode): void
+    {
+        $seller = new Party(
+            name: 'Vendeur Ultramarin',
+            address: new Address(line1: '1 rue Test', city: 'Test-Ville', postalCode: '97100', countryCode: $domComCode),
+        );
+
+        $invoice = new Invoice(
+            number: 'F20260004',
+            issueDate: new DateTimeImmutable('2026-01-15'),
+            typeCode: InvoiceTypeCode::CommercialInvoice,
+            seller: $seller,
+            buyer: InvoiceFactory::buyer(),
+        );
+
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+        $xpath = $this->xpath($xml);
+
+        self::assertSame(
+            'FR',
+            $this->text($xpath, '//ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID'),
+        );
+    }
+
+    public function test_br_fr_map_14_leaves_non_dom_com_country_codes_untouched(): void
+    {
+        $buyer = new Party(
+            name: 'Kunde GmbH',
+            address: new Address(line1: 'Teststraße 1', city: 'Berlin', postalCode: '10115', countryCode: 'DE'),
+        );
+
+        $invoice = new Invoice(
+            number: 'F20260005',
+            issueDate: new DateTimeImmutable('2026-01-15'),
+            typeCode: InvoiceTypeCode::CommercialInvoice,
+            seller: InvoiceFactory::seller(),
+            buyer: $buyer,
+        );
+
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+        $xpath = $this->xpath($xml);
+
+        self::assertSame(
+            'DE',
+            $this->text($xpath, '//ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID'),
+        );
     }
 
     private function text(DOMXPath $xpath, string $query): ?string

@@ -14,6 +14,7 @@ use PatODev\FacturX\Model\Identifier;
 use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Model\InvoiceLine;
 use PatODev\FacturX\Model\Party;
+use PatODev\FacturX\Support\FrenchTerritoryCountryCode;
 use PatODev\FacturX\Support\Money;
 
 /**
@@ -409,7 +410,7 @@ final class CiiInvoiceWriter
             $address->appendChild($this->el($this->doc, self::RAM, 'ram:LineThree', $party->address->line3));
         }
         $address->appendChild($this->el($this->doc, self::RAM, 'ram:CityName', $party->address->city));
-        $address->appendChild($this->el($this->doc, self::RAM, 'ram:CountryID', $party->address->countryCode));
+        $address->appendChild($this->el($this->doc, self::RAM, 'ram:CountryID', FrenchTerritoryCountryCode::toReportedCode($party->address->countryCode)));
         $el->appendChild($address);
 
         if ($party->electronicAddress !== null) {

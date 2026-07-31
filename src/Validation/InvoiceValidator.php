@@ -6,6 +6,7 @@ namespace PatODev\FacturX\Validation;
 
 use DOMDocument;
 use DOMXPath;
+use PatODev\FacturX\Support\FrenchVatRates;
 
 /**
  * Checks a Factur-X CII XML string against a curated, hand-picked set of
@@ -112,6 +113,11 @@ final class InvoiceValidator
                 'description' => 'Every allowance/charge has a reason code or reason text.',
                 'check' => $this->checkAllowanceChargeReasons(...),
             ],
+            [
+                'code' => 'BR-FR-MAP-12',
+                'description' => 'Every VAT rate (BT-96, BT-103, BT-119, BT-152) is one of the rates allowed by the French mapping.',
+                'check' => $this->checkAllowedVatRates(...),
+            ],
         ];
     }
 
@@ -187,6 +193,28 @@ final class InvoiceValidator
 
         if ($missing > 0) {
             return sprintf('%d of %d SpecifiedTradeAllowanceCharge node(s) have neither ram:Reason nor ram:ReasonCode.', $missing, $nodes->count());
+        }
+
+        return null;
+    }
+
+    private function checkAllowedVatRates(DOMXPath $xpath): ?string
+    {
+        $nodes = $xpath->query('//ram:RateApplicablePercent');
+        if ($nodes === null || $nodes->count() === 0) {
+            return null;
+        }
+
+        $invalid = [];
+        foreach ($nodes as $node) {
+            $rate = (float) $node->textContent;
+            if (! FrenchVatRates::isAllowed($rate)) {
+                $invalid[] = $node->textContent;
+            }
+        }
+
+        if ($invalid !== []) {
+            return sprintf('Disallowed VAT rate(s): %s.', implode(', ', array_unique($invalid)));
         }
 
         return null;

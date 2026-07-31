@@ -59,6 +59,10 @@ final class InvoiceBuilder
 
     private ?Party $payeeParty = null;
 
+    private ?DateTimeImmutable $billingPeriodStartDate = null;
+
+    private ?DateTimeImmutable $billingPeriodEndDate = null;
+
     private FacturXProfile $profile = FacturXProfile::En16931;
 
     /** @var InvoiceLine[] */
@@ -194,6 +198,15 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /** BG-14: the period the invoice covers (BT-73/BT-74), e.g. a subscription billing month. */
+    public function billingPeriod(DateTimeImmutable $startDate, DateTimeImmutable $endDate): self
+    {
+        $this->billingPeriodStartDate = $startDate;
+        $this->billingPeriodEndDate = $endDate;
+
+        return $this;
+    }
+
     public function profile(FacturXProfile $profile): self
     {
         $this->profile = $profile;
@@ -298,6 +311,8 @@ final class InvoiceBuilder
             deliveryParty: $this->deliveryParty,
             deliveryDate: $this->deliveryDate,
             payeeParty: $this->payeeParty,
+            billingPeriodStartDate: $this->billingPeriodStartDate,
+            billingPeriodEndDate: $this->billingPeriodEndDate,
             profile: $this->profile,
         );
 

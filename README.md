@@ -35,10 +35,10 @@ a later release.
   rather than rejected. Anything unsupported raises `UnsupportedPdfException`
   rather than silently producing a broken file.
 - The XML writer covers the fields most B2B invoices need (header
-  identification, seller/buyer/delivery party, key references, notes, lines
-  with allowances/charges, VAT breakdown, one payment mean, totals) but not
-  the full ~160 EN 16931 business terms yet, and not the `EXTENDED-CTC-FR`
-  data (multi-seller invoices, sub-lines, ...).
+  identification, seller/buyer/delivery/payee party, key references, notes,
+  billing period, lines with allowances/charges, VAT breakdown, one payment
+  mean, totals) but not the full ~160 EN 16931 business terms yet, and not
+  the `EXTENDED-CTC-FR` data (multi-seller invoices, sub-lines, ...).
 
 ## Usage
 

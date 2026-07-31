@@ -47,6 +47,8 @@ final class Invoice
         public readonly ?Party $deliveryParty = null,
         public readonly ?DateTimeImmutable $deliveryDate = null,
         public readonly ?Party $payeeParty = null,
+        public readonly ?DateTimeImmutable $billingPeriodStartDate = null,
+        public readonly ?DateTimeImmutable $billingPeriodEndDate = null,
         public readonly FacturXProfile $profile = FacturXProfile::En16931,
     ) {
     }

@@ -159,6 +159,39 @@ final class CiiInvoiceWriterTest extends TestCase
         self::assertSame(0, $xpath->query('//ram:ApplicableHeaderTradeSettlement/ram:PayeeTradeParty')?->count());
     }
 
+    public function test_writes_the_billing_period_when_present(): void
+    {
+        $invoice = new Invoice(
+            number: 'F20260005',
+            issueDate: new DateTimeImmutable('2026-01-15'),
+            typeCode: InvoiceTypeCode::CommercialInvoice,
+            seller: InvoiceFactory::seller(),
+            buyer: InvoiceFactory::buyer(),
+            billingPeriodStartDate: new DateTimeImmutable('2026-01-01'),
+            billingPeriodEndDate: new DateTimeImmutable('2026-01-31'),
+        );
+
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+        $xpath = $this->xpath($xml);
+
+        self::assertSame(
+            '20260101',
+            $this->text($xpath, '//ram:ApplicableHeaderTradeSettlement/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString'),
+        );
+        self::assertSame(
+            '20260131',
+            $this->text($xpath, '//ram:ApplicableHeaderTradeSettlement/ram:BillingSpecifiedPeriod/ram:EndDateTime/udt:DateTimeString'),
+        );
+    }
+
+    public function test_omits_the_billing_period_when_absent(): void
+    {
+        $xml = (new CiiInvoiceWriter())->toXmlString(InvoiceFactory::simple());
+        $xpath = $this->xpath($xml);
+
+        self::assertSame(0, $xpath->query('//ram:ApplicableHeaderTradeSettlement/ram:BillingSpecifiedPeriod')?->count());
+    }
+
     /**
      * @return array<string, array{string}>
      */

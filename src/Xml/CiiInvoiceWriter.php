@@ -22,9 +22,10 @@ use PatODev\FacturX\Support\Money;
  * profile, i.e. the "factur-x.xml" attachment (XP Z12-012 §4.8.7).
  *
  * Field coverage (v1): header identification, seller/buyer/delivery/payee
- * party, references (BT-10/12/13/25/26), notes, lines with line-level
- * allowances/charges, VAT breakdown, document-level allowances/charges,
- * monetary summation and a single SEPA credit transfer payment mean.
+ * party, references (BT-10/12/13/25/26), notes, billing period (BT-73/74),
+ * lines with line-level allowances/charges, VAT breakdown, document-level
+ * allowances/charges, monetary summation and a single SEPA credit transfer
+ * payment mean.
  * Not yet covered: multi-party extensions, attachments (BG-24), multiple
  * payment means, sub-lines. Tracked for a future release.
  */
@@ -298,6 +299,17 @@ final class CiiInvoiceWriter
 
         foreach ($this->calculator->vatBreakdown($invoice) as $entry) {
             $settlement->appendChild($this->buildVatBreakdownEntry($entry));
+        }
+
+        if ($invoice->billingPeriodStartDate !== null && $invoice->billingPeriodEndDate !== null) {
+            $period = $this->el($this->doc, self::RAM, 'ram:BillingSpecifiedPeriod');
+            $start = $this->el($this->doc, self::RAM, 'ram:StartDateTime');
+            $start->appendChild($this->dateTimeString($invoice->billingPeriodStartDate));
+            $period->appendChild($start);
+            $end = $this->el($this->doc, self::RAM, 'ram:EndDateTime');
+            $end->appendChild($this->dateTimeString($invoice->billingPeriodEndDate));
+            $period->appendChild($end);
+            $settlement->appendChild($period);
         }
 
         foreach ($invoice->documentAllowances() as $allowance) {

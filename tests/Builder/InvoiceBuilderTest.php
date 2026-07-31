@@ -108,6 +108,26 @@ final class InvoiceBuilderTest extends TestCase
         self::assertNull($invoice->payeeParty);
     }
 
+    public function test_billing_period_is_optional_and_defaults_to_null(): void
+    {
+        $invoice = Invoice::builder('F1')
+            ->seller($this->minimalParty('Seller'))
+            ->buyer($this->minimalParty('Buyer'))
+            ->billingPeriod(new DateTimeImmutable('2026-01-01'), new DateTimeImmutable('2026-01-31'))
+            ->build();
+
+        self::assertEquals(new DateTimeImmutable('2026-01-01'), $invoice->billingPeriodStartDate);
+        self::assertEquals(new DateTimeImmutable('2026-01-31'), $invoice->billingPeriodEndDate);
+
+        $invoiceWithoutPeriod = Invoice::builder('F1')
+            ->seller($this->minimalParty('Seller'))
+            ->buyer($this->minimalParty('Buyer'))
+            ->build();
+
+        self::assertNull($invoiceWithoutPeriod->billingPeriodStartDate);
+        self::assertNull($invoiceWithoutPeriod->billingPeriodEndDate);
+    }
+
     public function test_rejects_building_without_a_seller(): void
     {
         $this->expectException(LogicException::class);

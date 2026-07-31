@@ -31,4 +31,10 @@ final class FrenchTerritoryCountryCode
     {
         return in_array($countryCode, self::DOM_COM_CODES, true) ? 'FR' : $countryCode;
     }
+
+    /** @return list<string> */
+    public static function domComCodes(): array
+    {
+        return self::DOM_COM_CODES;
+    }
 }

@@ -10,9 +10,11 @@ use DOMXPath;
 use PatODev\FacturX\Enum\InvoiceTypeCode;
 use PatODev\FacturX\Enum\UnitOfMeasureCode;
 use PatODev\FacturX\Enum\VatCategory;
+use PatODev\FacturX\Model\Address;
 use PatODev\FacturX\Model\AllowanceCharge;
 use PatODev\FacturX\Model\Invoice;
 use PatODev\FacturX\Model\InvoiceLine;
+use PatODev\FacturX\Model\Party;
 use PatODev\FacturX\Tests\Support\InvoiceFactory;
 use PatODev\FacturX\Validation\InvoiceValidator;
 use PatODev\FacturX\Validation\RuleResult;
@@ -133,6 +135,121 @@ final class InvoiceValidatorTest extends TestCase
         $report = (new InvoiceValidator())->validate($xml);
 
         self::assertTrue($this->ruleResult($report, 'BR-FR-MAP-12')->passed);
+    }
+
+    public function test_br_fr_map_14_fails_when_a_country_code_is_a_dom_com_code(): void
+    {
+        $xml = $this->mutate($this->baselineXml(), function (DOMXPath $xpath): void {
+            $node = $xpath->query('//ram:SellerTradeParty//ram:CountryID')->item(0);
+            $node->textContent = 'RE';
+        });
+
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertFalse($this->ruleResult($report, 'BR-FR-MAP-14')->passed);
+    }
+
+    public function test_has_billing_period_date_fails_when_both_dates_are_missing(): void
+    {
+        $invoice = $this->baselineInvoice();
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+
+        // Inject an empty BillingSpecifiedPeriod (as a malformed third-party invoice might).
+        $xml = str_replace(
+            '<ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>',
+            '<ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode><ram:BillingSpecifiedPeriod></ram:BillingSpecifiedPeriod>',
+            $xml,
+        );
+
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertFalse($this->ruleResult($report, 'has-billing-period-date')->passed);
+    }
+
+    public function test_has_billing_period_date_passes_when_present(): void
+    {
+        $invoice = new Invoice(
+            number: 'F20260002',
+            issueDate: new DateTimeImmutable('2026-01-15'),
+            typeCode: InvoiceTypeCode::CommercialInvoice,
+            seller: InvoiceFactory::seller(),
+            buyer: InvoiceFactory::buyer(),
+            dueDate: new DateTimeImmutable('2026-02-14'),
+            billingPeriodStartDate: new DateTimeImmutable('2026-01-01'),
+            billingPeriodEndDate: new DateTimeImmutable('2026-01-31'),
+        );
+        $invoice->addLine(new InvoiceLine(
+            lineId: '1',
+            itemName: 'Abonnement',
+            quantity: 1.0,
+            unitCode: UnitOfMeasureCode::Piece,
+            netUnitPrice: 100.0,
+            vatCategory: VatCategory::Standard,
+            vatRate: 20.0,
+        ));
+
+        $xml = (new CiiInvoiceWriter())->toXmlString($invoice);
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertTrue($this->ruleResult($report, 'has-billing-period-date')->passed);
+    }
+
+    public function test_has_classification_scheme_fails_when_list_id_is_missing(): void
+    {
+        $invoice = $this->baselineInvoice();
+        $invoice->addLine(new InvoiceLine(
+            lineId: '2',
+            itemName: 'Composants électroniques',
+            quantity: 1.0,
+            unitCode: UnitOfMeasureCode::Piece,
+            netUnitPrice: 50.0,
+            vatCategory: VatCategory::Standard,
+            vatRate: 20.0,
+            classificationCode: '8541.10',
+            classificationScheme: 'HS',
+        ));
+
+        $xml = $this->mutate((new CiiInvoiceWriter())->toXmlString($invoice), function (DOMXPath $xpath): void {
+            $xpath->query('//ram:DesignatedProductClassification/ram:ClassCode')->item(0)->removeAttribute('listID');
+        });
+
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertFalse($this->ruleResult($report, 'has-classification-scheme')->passed);
+    }
+
+    public function test_has_optional_party_name_fails_when_delivery_party_name_is_blank(): void
+    {
+        $invoice = $this->baselineInvoice();
+        $invoice = new Invoice(
+            number: $invoice->number,
+            issueDate: $invoice->issueDate,
+            typeCode: $invoice->typeCode,
+            seller: $invoice->seller,
+            buyer: $invoice->buyer,
+            dueDate: $invoice->dueDate,
+            deliveryParty: new Party(
+                name: 'Entrepôt',
+                address: new Address(line1: '9 rue du Quai', city: 'Dunkerque', postalCode: '59140', countryCode: 'FR'),
+            ),
+        );
+        $invoice->addLine(new InvoiceLine(
+            lineId: '1',
+            itemName: 'Prestation',
+            quantity: 1.0,
+            unitCode: UnitOfMeasureCode::Piece,
+            netUnitPrice: 100.0,
+            vatCategory: VatCategory::Standard,
+            vatRate: 20.0,
+        ));
+
+        $xml = $this->mutate((new CiiInvoiceWriter())->toXmlString($invoice), function (DOMXPath $xpath): void {
+            $xpath->query('//ram:ShipToTradeParty/ram:Name')->item(0)->textContent = '';
+        });
+
+        $report = (new InvoiceValidator())->validate($xml);
+
+        self::assertFalse($this->ruleResult($report, 'has-optional-party-name')->passed);
     }
 
     private function baselineInvoice(): Invoice

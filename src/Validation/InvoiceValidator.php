@@ -6,6 +6,7 @@ namespace PatODev\FacturX\Validation;
 
 use DOMDocument;
 use DOMXPath;
+use PatODev\FacturX\Support\FrenchTerritoryCountryCode;
 use PatODev\FacturX\Support\FrenchVatRates;
 
 /**
@@ -118,6 +119,26 @@ final class InvoiceValidator
                 'description' => 'Every VAT rate (BT-96, BT-103, BT-119, BT-152) is one of the rates allowed by the French mapping.',
                 'check' => $this->checkAllowedVatRates(...),
             ],
+            [
+                'code' => 'BR-FR-MAP-14',
+                'description' => 'No party country code (BT-40, BT-55, BT-80, EXTFR-FE-157) is a DOM/COM code — those must be reported as FR.',
+                'check' => $this->checkNoDomComCountryCodes(...),
+            ],
+            [
+                'code' => 'has-billing-period-date',
+                'description' => 'If a billing period (BG-14) is present, its start date (BT-73) or end date (BT-74) is filled.',
+                'check' => $this->checkBillingPeriodHasADate(...),
+            ],
+            [
+                'code' => 'has-classification-scheme',
+                'description' => 'Every item classification identifier (BT-158) carries a scheme (BT-158-1).',
+                'check' => $this->checkClassificationHasScheme(...),
+            ],
+            [
+                'code' => 'has-optional-party-name',
+                'description' => 'The delivery (BG-13) and payee (BG-10) parties, when present, have a name.',
+                'check' => $this->checkOptionalPartiesHaveNames(...),
+            ],
         ];
     }
 
@@ -215,6 +236,92 @@ final class InvoiceValidator
 
         if ($invalid !== []) {
             return sprintf('Disallowed VAT rate(s): %s.', implode(', ', array_unique($invalid)));
+        }
+
+        return null;
+    }
+
+    private function checkNoDomComCountryCodes(DOMXPath $xpath): ?string
+    {
+        $nodes = $xpath->query('//ram:CountryID');
+        if ($nodes === null || $nodes->count() === 0) {
+            return null;
+        }
+
+        $invalid = [];
+        foreach ($nodes as $node) {
+            if (in_array($node->textContent, FrenchTerritoryCountryCode::domComCodes(), true)) {
+                $invalid[] = $node->textContent;
+            }
+        }
+
+        if ($invalid !== []) {
+            return sprintf('DOM/COM country code(s) found where FR was expected: %s.', implode(', ', array_unique($invalid)));
+        }
+
+        return null;
+    }
+
+    private function checkBillingPeriodHasADate(DOMXPath $xpath): ?string
+    {
+        $period = $xpath->query('//ram:BillingSpecifiedPeriod')?->item(0);
+        if ($period === null) {
+            return null;
+        }
+
+        $periodXPath = new DOMXPath($period->ownerDocument);
+        $periodXPath->registerNamespace('ram', self::RAM);
+
+        $hasStart = trim((string) $periodXPath->query('ram:StartDateTime', $period)->item(0)?->textContent) !== '';
+        $hasEnd = trim((string) $periodXPath->query('ram:EndDateTime', $period)->item(0)?->textContent) !== '';
+
+        if (! $hasStart && ! $hasEnd) {
+            return 'ram:BillingSpecifiedPeriod has neither ram:StartDateTime nor ram:EndDateTime.';
+        }
+
+        return null;
+    }
+
+    private function checkClassificationHasScheme(DOMXPath $xpath): ?string
+    {
+        $nodes = $xpath->query('//ram:DesignatedProductClassification/ram:ClassCode');
+        if ($nodes === null || $nodes->count() === 0) {
+            return null;
+        }
+
+        $missing = 0;
+        foreach ($nodes as $node) {
+            if (! $node->hasAttribute('listID') || $node->getAttribute('listID') === '') {
+                $missing++;
+            }
+        }
+
+        if ($missing > 0) {
+            return sprintf('%d of %d ram:ClassCode node(s) have no listID attribute.', $missing, $nodes->count());
+        }
+
+        return null;
+    }
+
+    private function checkOptionalPartiesHaveNames(DOMXPath $xpath): ?string
+    {
+        $missing = [];
+        foreach (['ShipToTradeParty', 'PayeeTradeParty'] as $partyElement) {
+            $party = $xpath->query("//ram:{$partyElement}")?->item(0);
+            if ($party === null) {
+                continue;
+            }
+
+            $partyXPath = new DOMXPath($party->ownerDocument);
+            $partyXPath->registerNamespace('ram', self::RAM);
+
+            if (trim((string) $partyXPath->query('ram:Name', $party)->item(0)?->textContent) === '') {
+                $missing[] = $partyElement;
+            }
+        }
+
+        if ($missing !== []) {
+            return sprintf('Missing ram:Name on: %s.', implode(', ', $missing));
         }
 
         return null;

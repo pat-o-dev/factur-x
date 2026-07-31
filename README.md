@@ -111,13 +111,20 @@ vendor/bin/phpunit
 not the full official EN 16931 schematron ruleset (see Roadmap):
 
 - Structural: well-formed XML, correct root element/namespace, at least one
-  line, a seller and a buyer party.
+  line, a seller and a buyer party; a billing period (BG-14) carries a start
+  or end date; an item classification identifier (BT-158) carries a scheme
+  (BT-158-1); the delivery (BG-13) and payee (BG-10) parties, when present,
+  have a name.
 - `BR-CO-15`: tax basis total + tax total = grand total, plus a sub-rule
   (`BR-CO-15-currencyID`) that the tax total amount carries a `currencyID`
   attribute (required by most EN 16931 validators, e.g. KoSIT).
 - `BR-CO-25`: if the amount due is positive, a due date or payment terms
   text must be present.
 - `BR-CO-5-6`: every allowance/charge has a reason code or reason text.
+- `BR-FR-MAP-12`: every VAT rate is one of the rates allowed by the French
+  mapping (see `FrenchVatRates`).
+- `BR-FR-MAP-14`: no party country code is a DOM/COM code — those must be
+  reported as `FR` (see `FrenchTerritoryCountryCode`).
 
 Feed it XML extracted from a hybrid PDF via `EmbeddedXmlExtractor` (classic,
 unencrypted PDFs only, same limitation class as `PdfA3Attacher`; both our
